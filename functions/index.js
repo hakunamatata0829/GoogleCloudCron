@@ -1,15 +1,10 @@
 const functions = require('firebase-functions');
 const firebase = require('firebase-admin');
 const express = require('express');
-// const engines = require('consolidate');
-// const request=require('request');
-// const https = require('https');
-// const fs = require('fs');
-// const path = require('path');
-// const uuidv1 = require('uuid/v1');
 const scheduler = require('@google-cloud/scheduler');
 const csv = require('csvtojson');
 const csvFilePath='./addresses.csv';
+
 // Initialize Cloud Firestore through Firebase
 const firebaseApp =  firebase.initializeApp({
     apiKey: "AIzaSyA8pTdfwqww2c3DXNU6n4wxQsX2YWC1YKQ",
@@ -79,17 +74,13 @@ async function csvToJSON1() {
         res.error(500);
     });
 
-    // // get csv file and create stream
+    // // get csv file and create stream from remote link
     // const stream = request.get('https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv');
     
     // // convert csv file (stream) to JSON format data
     // const json = await csv().fromStream(stream);
     // return json;
 }
-
-// app.engine('hbs', engines.handlebars);
-// app.set('views', './views');
-// app.set('view engine', 'hbs');
 
 app.get('/timestamp', (request, response) => {
     response.send(`${Date.now()}`);
@@ -147,16 +138,9 @@ async function createJob(jobObj) {
     // Construct the fully qualified location path.
     const parent = client.locationPath(projectId, locationId);
     const jobname = "projects/"+projectId+"/locations/"+locationId+"/jobs/"+serviceId;
+    
     // Construct the request body.
     const job = {
-    //   HttpTarget: {
-    //     appEngineRouting: {
-    //       service: serviceId,
-    //     },
-    //     relativeUri: jobObj.API_URL,
-    //     httpMethod: 'POST',
-    //     body: Buffer.from('Hello World'), //.toString("base64"),
-    //   },
         name:jobname,
         HttpTarget: {
             uri: jobObj.API_URL,
