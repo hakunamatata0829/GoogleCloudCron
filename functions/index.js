@@ -146,19 +146,25 @@ async function createJob(jobObj) {
   
     // Construct the fully qualified location path.
     const parent = client.locationPath(projectId, locationId);
-  
+    const jobname = "projects/"+projectId+"/locations/"+locationId+"/jobs/"+serviceId;
     // Construct the request body.
     const job = {
-      appEngineHttpTarget: {
-        appEngineRouting: {
-          service: serviceId,
+    //   HttpTarget: {
+    //     appEngineRouting: {
+    //       service: serviceId,
+    //     },
+    //     relativeUri: jobObj.API_URL,
+    //     httpMethod: 'POST',
+    //     body: Buffer.from('Hello World'), //.toString("base64"),
+    //   },
+        name:jobname,
+        HttpTarget: {
+            uri: jobObj.API_URL,
+            httpMethod: 'POST',
+            body: Buffer.from('Hello World'), //.toString("base64"),
         },
-        relativeUri: jobObj.API_URL,
-        httpMethod: 'POST',
-        body: Buffer.from('Hello World'), //.toString("base64"),
-      },
-      schedule: '* /5 * * *',
-      timeZone: 'America/Los_Angeles',
+        schedule: '* /5 * * *',
+        timeZone: 'America/Los_Angeles',
     };
   
     const request = {
