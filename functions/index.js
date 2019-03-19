@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const firebase = require('firebase-admin');
 const express = require('express');
+const request=require('request');
 const scheduler = require('@google-cloud/scheduler');
 const csv = require('csvtojson');
 const csvFilePath='./addresses.csv';
@@ -19,6 +20,10 @@ var db = firebaseApp.firestore();
 const app = express();
 const cronJob = express();
 
+//Initialize Cloud Project 
+const projectId = "csvdemo-234414" // change your project-id
+const locationId = "us-central1"   // change your location-id
+
 function getFacts(){
     const ref = firebaseApp.database().ref('facts');
     return ref.once('value').then(snap => snap.val());
@@ -28,9 +33,14 @@ const url = 'https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv';
 
 async function csvToJSON1() {
     var i = 0;
+    const stream = request.get('https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv');
+    
     await csv()
-    .fromFile(csvFilePath)
+   // .fromFile(csvFilePath)
+    .fromStream(stream)
     .then( (jsonObj)=>{ 
+        console.log(jsonObj);
+        return;
         return Promise.all(
             jsonObj.map(async k => {
 
@@ -131,8 +141,6 @@ async function createJob(jobObj) {
     const client = new scheduler.CloudSchedulerClient();
   
     // Config your project details
-    const projectId = "csvdemo-234414" // change your project-id
-    const locationId = "us-central1"   // change your location-id
     const serviceId = jobObj.Name     
   
     // Construct the fully qualified location path.
@@ -162,8 +170,43 @@ async function createJob(jobObj) {
     // [END cloud_scheduler_create_job]
 }
   
+ /**
+ * Delete a job via the Cloud Scheduler API
+ */
+async function deleteJob(jobId) {
+    // [START cloud_scheduler_delete_job]
+    const scheduler = require('@google-cloud/scheduler');
+  
+    // Create a client.
+    const client = new scheduler.CloudSchedulerClient();
+  
+    // Construct the fully qualified location path.
+    const job = client.jobPath(projectId, locationId, jobId);
+  
+    // Use the client to send the job creation request.
+    await client.deleteJob({name: job});
+    console.log('Job deleted.');
+    // [END cloud_scheduler_delete_job]
+}
  
- 
+ /**
+ * Get a job via the Cloud Scheduler API
+ */
+async function getJob(jobId) {
+    // [START cloud_scheduler_get_job]
+    const scheduler = require('@google-cloud/scheduler');
+  
+    // Create a client.
+    const client = new scheduler.CloudSchedulerClient();
+  
+    // Construct the fully qualified location path.
+    const job = client.jobPath(projectId, locationId, jobId);
+  
+    // Use the client to send the job creation request.
+    await client.getJob({name: job});
+    console.log('Job getted.');
+    // [END cloud_scheduler_get_job]
+}
 
 cronJob.get('/', (request, response) => {
     
